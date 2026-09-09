@@ -1,0 +1,62 @@
+import { useState } from 'react';
+
+export default function JobPostForm({ token, onPosted }: { token: string, onPosted: () => void }) {
+      const [title, setTitle] = useState('');
+        const [description, setDescription] = useState('');
+          const [budget, setBudget] = useState('');
+            const [skills, setSkills] = useState('PyTorch, RAG, LLM-Fine-Tuning');
+              const [loading, setLoading] = useState(false);
+
+                const handleSubmit = async (e: React.FormEvent) => {
+                        e.preventDefault();
+                            setLoading(true);
+                                try {
+                                          const res = await fetch('http://localhost:8000/api/v1/jobs/create', {
+                                                    method: 'POST',
+                                                            headers: {
+                                                                          'Content-Type': 'application/json',
+                                                                                    'Authorization': `Bearer ${token}`
+                                                            },
+                                                                    body: JSON.stringify({
+                                                                                  title,
+                                                                                            description,
+                                                                                                      budget_usd: parseFloat(budget),
+                                                                                                                required_skills: skills.split(',').map(s => s.trim()).filter(Boolean)
+                                                                    })
+                                          });
+                                                const data = await res.json();
+                                                      if (!res.ok) throw new Error(data.detail || 'Failed');
+                                                            alert(`Job posted! ID: ${data.id}`);
+                                                                  setTitle(''); setDescription(''); setBudget('');
+                                                                        onPosted();
+                                } catch (err: any) {
+                                          alert(`Error: ${err.message}`);
+                                } finally {
+                                          setLoading(false);
+                                }
+                };
+
+                  return (
+                        <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-xl">
+                              <h3 className="text-xl font-bold mb-4">Post a New Job</h3>
+                                    <form onSubmit={handleSubmit} className="space-y-4">
+                                            <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Title: e.g. Build RAG Chatbot" className="w-full bg-black border border-zinc-700 p-3 rounded text-white" required />
+                                                    <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Description (min 20 chars)" className="w-full bg-black border border-zinc-700 p-3 rounded text-white h-28" required />
+                                                            <input value={budget} onChange={e => setBudget(e.target.value)} type="number" step="0.01" placeholder="Budget USD e.g. 2500" className="w-full bg-black border border-zinc-700 p-3 rounded text-white" required />
+                                                                    <input value={skills} onChange={e => setSkills(e.target.value)} placeholder="Skills comma separated: PyTorch, Docker" className="w-full bg-black border border-zinc-700 p-3 rounded text-white" required />
+                                                                            <button disabled={loading} className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded font-bold disabled:opacity-50">
+                                                                                      {loading ? 'Posting...' : 'Post Job (10% fee auto-calculated later)'}
+                                                                                              </button>
+                                                                                                    </form>
+                                                                                                        </div>
+                  );
+}
+                  )
+                                }
+                                }
+                                                                    })
+                                                            }
+                                          })
+                                }
+                }
+}
